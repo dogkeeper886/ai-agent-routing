@@ -1,0 +1,11 @@
+# Host-specific config (user creates from template)
+config.env
+
+# Editor backup files
+*~
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
