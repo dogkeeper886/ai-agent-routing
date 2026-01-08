@@ -11,6 +11,16 @@ Split network traffic so AI coding agents maintain internet connectivity while d
 
 ---
 
+## Use Cases
+
+- **Captive portal development** - Test portal flows while coding with AI assistance
+- **wpa_supplicant configuration** - Develop WiFi configs on isolated networks
+- **Network management tools** - Build NetworkManager plugins or network scripts
+- **IoT device development** - Work with devices on isolated networks
+- **Network security testing** - Maintain agent access during security work
+
+---
+
 ## Design Flow
 
 ### Overview
@@ -92,6 +102,14 @@ Uses Linux policy-based routing (iproute2) to split traffic between two network 
 
 ---
 
+## Requirements
+
+- Linux with iproute2 (`ip` command)
+- Two network interfaces (e.g., Ethernet + WiFi)
+- sudo access for route changes
+
+---
+
 ## Quick Start
 
 ### 1. Configure
@@ -125,6 +143,15 @@ cp config.env.example config.env
 
 ---
 
+## Testing
+
+```bash
+./scripts/ai-routing.sh enable && cd tests && ./test-routing.sh enable
+./scripts/ai-routing.sh disable && cd tests && ./test-routing.sh disable
+```
+
+---
+
 ## Configuration
 
 Edit `config.env`:
@@ -142,33 +169,6 @@ Edit `config.env`:
 - 34.36.0.0/16 - Google Cloud
 - 34.149.0.0/16 - Google Cloud
 - 142.250.0.0/16 - Google
-
----
-
-## Use Cases
-
-- **Captive portal development** - Test portal flows while coding with AI assistance
-- **wpa_supplicant configuration** - Develop WiFi configs on isolated networks
-- **Network management tools** - Build NetworkManager plugins or network scripts
-- **IoT device development** - Work with devices on isolated networks
-- **Network security testing** - Maintain agent access during security work
-
----
-
-## Requirements
-
-- Linux with iproute2 (`ip` command)
-- Two network interfaces (e.g., Ethernet + WiFi)
-- sudo access for route changes
-
----
-
-## Testing
-
-```bash
-./scripts/ai-routing.sh enable && cd tests && ./test-routing.sh enable
-./scripts/ai-routing.sh disable && cd tests && ./test-routing.sh disable
-```
 
 ---
 
