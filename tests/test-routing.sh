@@ -1,5 +1,5 @@
 #!/bin/bash
-# Test cases for AI agent routing
+# Test cases for AI agent routing (nmcli-based)
 
 set -e
 
@@ -32,37 +32,65 @@ test_enable() {
     echo ""
     echo "=== Tests after 'enable' ==="
 
-    check "Anthropic API (160.79.104.0/24) routes via $ETH_IF" \
-        "ip route get 160.79.104.10 | grep -q 'dev $ETH_IF'"
+    # NetworkManager configuration tests
+    echo ""
+    echo "--- NM Connection Settings ---"
 
-    check "Google Cloud (34.36.0.0/16) routes via $ETH_IF" \
-        "ip route get 34.36.1.1 | grep -q 'dev $ETH_IF'"
+    check "never-default is enabled on $INET_CONN" \
+        "nmcli -g ipv4.never-default connection show \"$INET_CONN\" | grep -q 'yes'"
 
-    check "Google Cloud (34.149.0.0/16) routes via $ETH_IF" \
-        "ip route get 34.149.1.1 | grep -q 'dev $ETH_IF'"
+    check "ipv4.routes configured on $INET_CONN" \
+        "nmcli -g ipv4.routes connection show \"$INET_CONN\" | grep -q '160.79.104.0/24'"
 
-    check "Google (142.250.0.0/16) routes via $ETH_IF" \
-        "ip route get 142.250.1.1 | grep -q 'dev $ETH_IF'"
+    # Route tests
+    echo ""
+    echo "--- Active Routes ---"
 
-    check "Default route via $WIFI_IF" \
-        "ip route show default | head -1 | grep -q 'dev $WIFI_IF'"
+    check "Anthropic API (160.79.104.0/24) routes via $INET_IF" \
+        "ip route get 160.79.104.10 | grep -q 'dev $INET_IF'"
 
-    check "Regular traffic (8.8.8.8) routes via $WIFI_IF" \
-        "ip route get 8.8.8.8 | grep -q 'dev $WIFI_IF'"
+    check "Google Cloud (34.36.0.0/16) routes via $INET_IF" \
+        "ip route get 34.36.1.1 | grep -q 'dev $INET_IF'"
+
+    check "Google Cloud (34.149.0.0/16) routes via $INET_IF" \
+        "ip route get 34.149.1.1 | grep -q 'dev $INET_IF'"
+
+    check "Google (142.250.0.0/16) routes via $INET_IF" \
+        "ip route get 142.250.1.1 | grep -q 'dev $INET_IF'"
+
+    check "Default route via $DEV_IF" \
+        "ip route show default | head -1 | grep -q 'dev $DEV_IF'"
+
+    check "Regular traffic (8.8.8.8) routes via $DEV_IF" \
+        "ip route get 8.8.8.8 | grep -q 'dev $DEV_IF'"
 }
 
 test_disable() {
     echo ""
     echo "=== Tests after 'disable' ==="
 
-    check "Default route via $ETH_IF" \
-        "ip route show default | head -1 | grep -q 'dev $ETH_IF'"
+    # NetworkManager configuration tests
+    echo ""
+    echo "--- NM Connection Settings ---"
+
+    check "never-default is disabled on $INET_CONN" \
+        "nmcli -g ipv4.never-default connection show \"$INET_CONN\" | grep -q 'no'"
+
+    check "ipv4.routes cleared on $INET_CONN" \
+        "[ -z \"\$(nmcli -g ipv4.routes connection show \"$INET_CONN\")\" ]"
+
+    # Route tests
+    echo ""
+    echo "--- Active Routes ---"
+
+    check "Default route via $INET_IF" \
+        "ip route show default | head -1 | grep -q 'dev $INET_IF'"
 
     check "No pinned route for 160.79.104.0/24" \
         "! ip route show 160.79.104.0/24 2>/dev/null | grep -q 'via'"
 
-    check "Regular traffic (8.8.8.8) routes via $ETH_IF" \
-        "ip route get 8.8.8.8 | grep -q 'dev $ETH_IF'"
+    check "Regular traffic (8.8.8.8) routes via $INET_IF" \
+        "ip route get 8.8.8.8 | grep -q 'dev $INET_IF'"
 }
 
 test_status() {
